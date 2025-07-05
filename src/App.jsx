@@ -1,65 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import MovieCard from './Components/MovieCard';
+import LoadingCard from './Components/LoadingCard';
 
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 
-function MovieCard({ movie }) {
-  return (
-    <div
-      style={{
-        width: '300px',
-        height: '450px',
-        borderRadius: '20px',
-        boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
-        overflow: 'hidden',
-        position: 'relative',
-        backgroundColor: '#000',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundImage: `url(https://image.tmdb.org/t/p/w500${movie.poster_path})`,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        transition: 'transform 0.3s ease-in-out',
-      }}
-    >
-      <div
-        style={{
-          background: 'rgba(0,0,0,0.6)',
-          color: 'white',
-          padding: '1rem',
-        }}
-      >
-        <h2 style={{ margin: 0 }}>{movie.title}</h2>
-        <p style={{ margin: '0.25rem 0' }}>
-          <strong>Year:</strong> {movie.release_date?.split('-')[0]}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function LoadingCard() {
-  return (
-    <div
-      style={{
-        width: '300px',
-        height: '450px',
-        borderRadius: '20px',
-        backgroundColor: '#333',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#aaa',
-        fontSize: '1.2rem',
-        boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
-      }}
-    >
-      Loading...
-    </div>
-  );
-}
 
 function App() {
   const [movie, setMovie] = useState(null);
@@ -133,8 +79,12 @@ function App() {
         color: '#fff',
       }}
     >
-      <h1>🎬 Movie Matcher</h1>
-      {loading ? <LoadingCard /> : movie && <MovieCard movie={movie} />}
+      <h1> Movie Matcher</h1>
+      {loading ? <LoadingCard /> : movie && <MovieCard
+          movie={movie}
+          onSwipeLeft={goToNextMovie}
+          onSwipeRight={goToNextMovie}
+        />}
 
       <div
         style={{
@@ -149,20 +99,6 @@ function App() {
           style={{
             padding: '0.75rem 1.5rem',
             fontSize: '1rem',
-            backgroundColor: '#4CAF50',
-            border: 'none',
-            borderRadius: '10px',
-            color: 'white',
-            cursor: 'pointer',
-          }}
-        >
-          Like
-        </button>
-        <button
-          onClick={goToNextMovie}
-          style={{
-            padding: '0.75rem 1.5rem',
-            fontSize: '1rem',
             backgroundColor: '#f44336',
             border: 'none',
             borderRadius: '10px',
@@ -172,6 +108,21 @@ function App() {
         >
           Dislike
         </button>
+        <button
+          onClick={goToNextMovie}
+          style={{
+            padding: '0.75rem 1.5rem',
+            fontSize: '1rem',
+            backgroundColor: '#4CAF50',
+            border: 'none',
+            borderRadius: '10px',
+            color: 'white',
+            cursor: 'pointer',
+          }}
+        >
+          Like   
+        </button>
+        
       </div>
 
       <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
