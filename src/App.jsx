@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import MovieCard from './Components/MovieCard';
-import LoadingCard from './Components/LoadingCard';
+import MovieCard from './components/MovieCard';
+import LoadingCard from './components/LoadingCard';
 
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
