@@ -46,9 +46,9 @@ export default function MovieCard({ movie, onSwipeLeft, onSwipeRight }) {
       setShowLabel(newRotation < -5 ? 'DISLIKE' : newRotation > 5 ? 'LIKE' : null);
     },
     onSwiped: () => {
-      if (rotation <= -20) {
+      if (rotation <= -10) {
         handleSwipeComplete('left');
-      } else if (rotation >= 20) {
+      } else if (rotation >= 10) {
         handleSwipeComplete('right');
       } else {
         setSwipeStyle({
@@ -70,9 +70,11 @@ export default function MovieCard({ movie, onSwipeLeft, onSwipeRight }) {
         width: '300px',
         height: '450px',
         borderRadius: '20px',
+        backgroundColor: '#2a2a2a',
+        color: '#ffffff',
         boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
         overflowY: 'auto',
-        backgroundColor: '#000',
+        
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',

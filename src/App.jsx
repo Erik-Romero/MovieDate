@@ -2,7 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import MovieCard from './components/MovieCard';
 import LoadingCard from './components/LoadingCard';
+import Select from 'react-select';
 
+const genreOptions = [
+  { value: '', label: 'All Genres' },
+  { value: '28', label: 'Action' },
+  { value: '35', label: 'Comedy' },
+  { value: '18', label: 'Drama' },
+  { value: '27', label: 'Horror' },
+  { value: '10749', label: 'Romance' },
+];
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -75,7 +84,7 @@ function App() {
         justifyContent: 'center',
         minHeight: '100vh',
         padding: '2rem',
-        backgroundColor: '#111',
+        background: 'linear-gradient(180deg, #1f1c2c 0%, #928DAB 100%)', // NEW
         color: '#fff',
       }}
     >
@@ -105,10 +114,10 @@ function App() {
           style={{
             padding: '0.75rem 1.5rem',
             fontSize: '1rem',
-            backgroundColor: '#f44336',
+            backgroundColor: '#3a3a3a',
             border: 'none',
-            borderRadius: '10px',
-            color: 'white',
+            borderRadius: '9999px',
+            color: '#ffffff',
             cursor: 'pointer',
           }}
         >
@@ -119,10 +128,10 @@ function App() {
           style={{
             padding: '0.75rem 1.5rem',
             fontSize: '1rem',
-            backgroundColor: '#4CAF50',
+            backgroundColor: '#f5cfc1',
             border: 'none',
-            borderRadius: '10px',
-            color: 'white',
+            borderRadius: '9999px',
+            color: '#1c1c1c',
             cursor: 'pointer',
           }}
         >
@@ -131,18 +140,27 @@ function App() {
       </div>
 
       <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
-        <select
-          value={selectedGenreId}
-          onChange={(e) => setSelectedGenreId(e.target.value)}
-          style={{ padding: '0.5rem', borderRadius: '5px' }}
-        >
-          <option value="">All Genres</option>
-          <option value="28">Action</option>
-          <option value="35">Comedy</option>
-          <option value="18">Drama</option>
-          <option value="27">Horror</option>
-          <option value="10749">Romance</option>
-        </select>
+        <Select
+  options={genreOptions}
+  defaultValue={genreOptions[0]}
+  onChange={(option) => setSelectedGenreId(option.value)}
+  styles={{
+    control: (base) => ({
+      ...base,
+      backgroundColor: '#2c2c2c',
+      borderRadius: '12px',
+      color: 'white',
+      border: 'none',
+    }),
+    singleValue: (base) => ({ ...base, color: 'white' }),
+    menu: (base) => ({ ...base, backgroundColor: '#2c2c2c' }),
+    option: (base, { isFocused }) => ({
+      ...base,
+      backgroundColor: isFocused ? '#444' : '#2c2c2c',
+      color: 'white',
+    }),
+  }}
+/>
 
         <input
           type="number"
