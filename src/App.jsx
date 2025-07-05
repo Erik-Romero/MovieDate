@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { createClient } from '@supabase/supabase-js';
 import MovieCard from './components/MovieCard';
 import LoadingCard from './components/LoadingCard';
 
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-const BASE_URL = 'https://api.themoviedb.org/3';
-
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function App() {
   const [movie, setMovie] = useState(null);
@@ -17,36 +17,36 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const fetchMovies = async () => {
-    
-    try {
-      setLoading(true);
-      const res = await axios.get(`${BASE_URL}/discover/movie`, {
-        params: {
-          api_key: TMDB_API_KEY,
-          sort_by: 'popularity.desc',
-          page: 1,
-          with_genres: selectedGenreId || undefined,
-          primary_release_date_gte: startYear ? `${startYear}-01-01` : undefined,
-          primary_release_date_lte: endYear ? `${endYear}-12-31` : undefined,
-        },
-      });
+    setLoading(true);
 
-      let fetched = res.data.results;
-      if (startYear || endYear) {
-        fetched = fetched.filter((movie) => {
-          const year = parseInt(movie.release_date?.split('-')[0]);
-          return (
-            (!startYear || year >= parseInt(startYear)) &&
-            (!endYear || year <= parseInt(endYear))
-          );
-        });
+    try {
+      let query = supabase.from('movies').select('*').not('popularity', 'is', null); // Filter out nulls;
+
+      if (selectedGenreId) {
+        query = query.contains('genres', [parseInt(selectedGenreId)]);
+      }
+      if (startYear) {
+        query = query.gte('release_year', parseInt(startYear));
+      }
+      if (endYear) {
+        query = query.lte('release_year', parseInt(endYear));
       }
 
-      setMovies(fetched);
-      setCurrentIndex(0);
-      setMovie(fetched[0] || null);
+      query = query.order('popularity', { ascending: false }).limit(100);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Supabase fetch error:', error);
+        setMovies([]);
+        setMovie(null);
+      } else {
+        setMovies(data);
+        setCurrentIndex(0);
+        setMovie(data[0] || null);
+      }
     } catch (err) {
-      console.error('Failed to fetch movies:', err);
+      console.error('Unexpected fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -80,11 +80,17 @@ function App() {
       }}
     >
       <h1> Movie Matcher</h1>
-      {loading ? <LoadingCard /> : movie && <MovieCard
+      {loading ? (
+        <LoadingCard />
+      ) : movie ? (
+        <MovieCard
           movie={movie}
           onSwipeLeft={goToNextMovie}
           onSwipeRight={goToNextMovie}
-        />}
+        />
+      ) : (
+        <p>No movies found.</p>
+      )}
 
       <div
         style={{
@@ -120,9 +126,8 @@ function App() {
             cursor: 'pointer',
           }}
         >
-          Like   
+          Like
         </button>
-        
       </div>
 
       <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>

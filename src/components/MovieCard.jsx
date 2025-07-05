@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { useSwipeable } from 'react-swipeable';
+
 const GENRE_MAP = {
   28: 'Action',
   35: 'Comedy',
   18: 'Drama',
   27: 'Horror',
   10749: 'Romance',
- 
 };
+
 export default function MovieCard({ movie, onSwipeLeft, onSwipeRight }) {
-  const genreNames = movie.genre_ids?.map((id) => GENRE_MAP[id]).filter(Boolean);
+  const genreIds = movie.genre_ids || movie.genres || [];
+  const genreNames = genreIds.map((id) => GENRE_MAP[id] || id).filter(Boolean);
+
   const [swipeStyle, setSwipeStyle] = useState({});
   const [rotation, setRotation] = useState(0);
   const [showLabel, setShowLabel] = useState(null);
@@ -116,10 +119,11 @@ export default function MovieCard({ movie, onSwipeLeft, onSwipeRight }) {
         <div style={{ padding: '1rem', color: 'white', backgroundColor: '#111' }}>
           <h2 style={{ margin: '0 0 0.25rem 0' }}>{movie.title}</h2>
           <p style={{ margin: '0.25rem 0' }}>
-            <strong>Year:</strong> {movie.release_date?.split('-')[0]}
+            <strong>Year:</strong> {movie.release_year || movie.release_date?.split('-')[0] || 'N/A'}
           </p>
           <p style={{ fontSize: '0.9rem' }}>{movie.overview || 'No description available.'}</p>
           <p><strong>User Score:</strong> {movie.vote_average || 'N/A'}/10</p>
+          <p><strong>Popularity:</strong> {movie.popularity || 'N/A'}/10</p>
           <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {genreNames.map((name) => (
               <span
