@@ -3,7 +3,6 @@ import axios from 'axios';
 
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
-const getRandomPage = () => Math.floor(Math.random() * 500) + 1;
 
 function MovieCard({ movie }) {
   return (
@@ -22,6 +21,7 @@ function MovieCard({ movie }) {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-end',
+        transition: 'transform 0.3s ease-in-out',
       }}
     >
       <div
@@ -39,6 +39,7 @@ function MovieCard({ movie }) {
     </div>
   );
 }
+
 function LoadingCard() {
   return (
     <div
@@ -59,6 +60,7 @@ function LoadingCard() {
     </div>
   );
 }
+
 function App() {
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -69,58 +71,55 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const fetchMovies = async () => {
-  if (startYear && endYear && parseInt(startYear) > parseInt(endYear)) {
-    alert('Start year must be less than or equal to end year.');
-    return;
-  }
-  try {
-    setLoading(true);
-    const page = 1;
-
-    const res = await axios.get(`${BASE_URL}/discover/movie`, {
-      params: {
-        api_key: TMDB_API_KEY,
-        sort_by: 'popularity.desc',
-        page,
-        with_genres: selectedGenreId || undefined,
-        primary_release_date_gte: startYear ? `${startYear}-01-01` : undefined,
-        primary_release_date_lte: endYear ? `${endYear}-12-31` : undefined,
-      },
-    });
-
-    let fetched = res.data.results;
-    if (startYear || endYear) {
-      fetched = fetched.filter((movie) => {
-        const year = parseInt(movie.release_date?.split('-')[0]);
-        return (
-          (!startYear || year >= parseInt(startYear)) &&
-          (!endYear || year <= parseInt(endYear))
-        );
+    
+    try {
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/discover/movie`, {
+        params: {
+          api_key: TMDB_API_KEY,
+          sort_by: 'popularity.desc',
+          page: 1,
+          with_genres: selectedGenreId || undefined,
+          primary_release_date_gte: startYear ? `${startYear}-01-01` : undefined,
+          primary_release_date_lte: endYear ? `${endYear}-12-31` : undefined,
+        },
       });
-    }
 
-    setMovies(fetched);
-    setCurrentIndex(0);
-    setMovie(fetched[0] || null);
-  } catch (err) {
-    console.error('Failed to fetch movies:', err);
-  } finally {
-    setLoading(false);
-  }
-};
+      let fetched = res.data.results;
+      if (startYear || endYear) {
+        fetched = fetched.filter((movie) => {
+          const year = parseInt(movie.release_date?.split('-')[0]);
+          return (
+            (!startYear || year >= parseInt(startYear)) &&
+            (!endYear || year <= parseInt(endYear))
+          );
+        });
+      }
+
+      setMovies(fetched);
+      setCurrentIndex(0);
+      setMovie(fetched[0] || null);
+    } catch (err) {
+      console.error('Failed to fetch movies:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-  fetchMovies();
-}, [startYear, endYear,selectedGenreId]);
-const goToNextMovie = () => {
-  const nextIndex = currentIndex + 1;
-  if (nextIndex < movies.length) {
-    setCurrentIndex(nextIndex);
-    setMovie(movies[nextIndex]);
-  } else {
-    fetchMovies(); // Fetch more if out of movies
-  }
-};
+    fetchMovies();
+  }, [startYear, endYear, selectedGenreId]);
+
+  const goToNextMovie = () => {
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < movies.length) {
+      setCurrentIndex(nextIndex);
+      setMovie(movies[nextIndex]);
+    } else {
+      fetchMovies();
+    }
+  };
+
   return (
     <div
       style={{
@@ -134,9 +133,9 @@ const goToNextMovie = () => {
         color: '#fff',
       }}
     >
-      <h1> Movie Matcher </h1>
-     {loading ? <LoadingCard /> : movie && <MovieCard movie={movie} />}
-      
+      <h1>🎬 Movie Matcher</h1>
+      {loading ? <LoadingCard /> : movie && <MovieCard movie={movie} />}
+
       <div
         style={{
           display: 'flex',
@@ -147,27 +146,63 @@ const goToNextMovie = () => {
       >
         <button
           onClick={goToNextMovie}
-          style={{ padding: '0.5rem 1rem', fontSize: '1rem' }}
+          style={{
+            padding: '0.75rem 1.5rem',
+            fontSize: '1rem',
+            backgroundColor: '#4CAF50',
+            border: 'none',
+            borderRadius: '10px',
+            color: 'white',
+            cursor: 'pointer',
+          }}
         >
-           Like
+          Like
         </button>
         <button
           onClick={goToNextMovie}
-          style={{ padding: '0.5rem 1rem', fontSize: '1rem' }}
+          style={{
+            padding: '0.75rem 1.5rem',
+            fontSize: '1rem',
+            backgroundColor: '#f44336',
+            border: 'none',
+            borderRadius: '10px',
+            color: 'white',
+            cursor: 'pointer',
+          }}
         >
-           Dislike
+          Dislike
         </button>
       </div>
-      <select onChange={(e) => setSelectedGenreId(e.target.value)}>
-        <option value="">All Genres</option>
-        <option value="28">Action</option>
-        <option value="35">Comedy</option>
-        <option value="18">Drama</option>
-        <option value="27">Horror</option>
-        <option value="10749">Romance</option>
-      </select>
-      <input type="number" placeholder="From" value={startYear} onChange={(e) => setStartYear(e.target.value)} />
-      <input type="number" placeholder="To" value={endYear} onChange={(e) => setEndYear(e.target.value)} />
+
+      <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+        <select
+          value={selectedGenreId}
+          onChange={(e) => setSelectedGenreId(e.target.value)}
+          style={{ padding: '0.5rem', borderRadius: '5px' }}
+        >
+          <option value="">All Genres</option>
+          <option value="28">Action</option>
+          <option value="35">Comedy</option>
+          <option value="18">Drama</option>
+          <option value="27">Horror</option>
+          <option value="10749">Romance</option>
+        </select>
+
+        <input
+          type="number"
+          placeholder="From"
+          value={startYear}
+          onChange={(e) => setStartYear(e.target.value)}
+          style={{ padding: '0.5rem', borderRadius: '5px', width: '80px' }}
+        />
+        <input
+          type="number"
+          placeholder="To"
+          value={endYear}
+          onChange={(e) => setEndYear(e.target.value)}
+          style={{ padding: '0.5rem', borderRadius: '5px', width: '80px' }}
+        />
+      </div>
     </div>
   );
 }
