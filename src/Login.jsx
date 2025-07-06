@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
+import { handleJoinGroup } from './components/LoginHandler'
+import { components } from 'react-select';
 
 export default function GroupJoin({ onJoin }) {
   const [group, setGroup] = useState('');
   const [username, setUsername] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (group.trim() && username.trim()) {
-      onJoin({ group: group.trim(), username: username.trim() });
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (group.trim() && username.trim()) {
+    const result = await handleJoinGroup({
+      group: group.trim(),
+      username: username.trim(),
+    });
+
+    if (result.error) {
+      alert(`Error: ${result.error}`);
     } else {
-      alert('Please enter both a group name and a username.');
+      // This sets userInfo in <Main />, which is passed to <App />
+      onJoin(result); 
     }
-  };
+  } else {
+    alert('Please enter both a group name and a username.');
+  }
+};
 
   return (
     <div
@@ -26,7 +39,7 @@ export default function GroupJoin({ onJoin }) {
         padding: '2rem',
       }}
     >
-      <h1> Join a Movie Group</h1>
+      <h1>Join a Movie Group</h1>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '300px' }}>
         <input
           type="text"
