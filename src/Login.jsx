@@ -1,62 +1,68 @@
 import React, { useState } from 'react';
-import { handleJoinGroup } from './components/LoginHandler'
-import { components } from 'react-select';
 
-export default function GroupJoin({ onJoin }) {
+/**
+ * Was: create-or-find user, create-or-find group, create membership, all in
+ * Supabase (LoginHandler.js). Now it just captures two strings and hands them
+ * up. Keeps the entry flow in place for when you wire a real backend back in.
+ */
+export default function Login({ onJoin }) {
   const [group, setGroup] = useState('');
   const [username, setUsername] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (group.trim() && username.trim()) {
-    const result = await handleJoinGroup({
-      group: group.trim(),
-      username: username.trim(),
-    });
-
-    if (result.error) {
-      alert(`Error: ${result.error}`);
-    } else {
-      // This sets userInfo in <Main />, which is passed to <App />
-      onJoin(result); 
+  const submit = (e) => {
+    e.preventDefault();
+    if (!group.trim() || !username.trim()) {
+      setError('Both fields are needed to continue.');
+      return;
     }
-  } else {
-    alert('Please enter both a group name and a username.');
-  }
-};
+    onJoin({ username: username.trim(), group: group.trim() });
+  };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#111',
-        color: '#fff',
-        padding: '2rem',
-      }}
-    >
-      <h1>Join a Movie Group</h1>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '300px' }}>
-        <input
-          type="text"
-          placeholder="Group Name"
-          value={group}
-          onChange={(e) => setGroup(e.target.value)}
-          style={{ padding: '0.75rem', fontSize: '1rem' }}
-        />
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          style={{ padding: '0.75rem', fontSize: '1rem' }}
-        />
-        <button type="submit" style={{ padding: '0.75rem', fontSize: '1rem' }}>Join</button>
-      </form>
+    <div className="screen screen-center">
+      <div className="login">
+        <h1 className="brand brand-lg">ReelMatch</h1>
+        <p className="brand-sub">Swipe with your group, meet in the middle.</p>
+
+        <form onSubmit={submit} className="login-form">
+          <label className="label" htmlFor="group">
+            Group name
+          </label>
+          <input
+            id="group"
+            className="field field-block"
+            value={group}
+            onChange={(e) => {
+              setGroup(e.target.value);
+              setError('');
+            }}
+            placeholder="friday-night"
+            autoComplete="off"
+          />
+
+          <label className="label" htmlFor="username">
+            Your name
+          </label>
+          <input
+            id="username"
+            className="field field-block"
+            value={username}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              setError('');
+            }}
+            placeholder="erik"
+            autoComplete="off"
+          />
+
+          {error && <p className="error">{error}</p>}
+
+          <button type="submit" className="btn btn-primary btn-block">
+            Start swiping
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
