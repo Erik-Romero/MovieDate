@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import MovieRow from './MovieRow';
 
 export default function Liked({ deck }) {
-  const { liked, matches } = deck;
-  const [tab, setTab] = useState('mine');
+  const { liked, loading } = deck;
   const navigate = useNavigate();
-
-  const showing = tab === 'mine' ? liked : matches;
 
   return (
     <div className="screen screen-scroll">
@@ -15,44 +12,25 @@ export default function Liked({ deck }) {
         <button className="btn btn-ghost" onClick={() => navigate('/')}>
           &larr; Back
         </button>
-        <div className="tabs">
-          <button
-            className={`tab ${tab === 'mine' ? 'tab-on' : ''}`}
-            onClick={() => setTab('mine')}
-          >
-            Yours ({liked.length})
-          </button>
-          <button
-            className={`tab ${tab === 'matches' ? 'tab-on' : ''}`}
-            onClick={() => setTab('matches')}
-          >
-            Matches ({matches.length})
-          </button>
-        </div>
+        <h1 className="brand">Liked ({liked.length})</h1>
       </header>
 
-      {showing.length === 0 ? (
+      {loading ? (
         <div className="empty-state">
-          <p className="empty-head">
-            {tab === 'mine' ? 'No likes yet' : 'No matches yet'}
-          </p>
-          <p className="empty-body">
-            {tab === 'mine'
-              ? 'Swipe right on something and it lands here.'
-              : 'Matches appear when you like a film someone in your group already liked.'}
-          </p>
+          <p className="empty-body">Loading…</p>
+        </div>
+      ) : liked.length === 0 ? (
+        <div className="empty-state">
+          <p className="empty-head">No likes yet</p>
+          <p className="empty-body">Swipe right on something and it lands here.</p>
           <button className="btn btn-primary" onClick={() => navigate('/')}>
             Back to swiping
           </button>
         </div>
       ) : (
         <ul className="rows">
-          {showing.map((movie) => (
-            <MovieRow
-              key={movie.id}
-              movie={movie}
-              matchedWith={movie.matchedWith ?? []}
-            />
+          {liked.map((movie) => (
+            <MovieRow key={movie.id} movie={movie} />
           ))}
         </ul>
       )}

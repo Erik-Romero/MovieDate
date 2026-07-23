@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import MovieCard from './components/MovieCard';
 import LoadingCard from './components/LoadingCard';
@@ -11,32 +11,24 @@ export default function App({ userInfo, deck, onSignOut }) {
     upNext,
     swipe,
     undo,
-    reset,
     canUndo,
     swipedCount,
     liked,
+    loading,
+    error,
     filters,
     setGenreId,
     setStartYear,
     setEndYear,
   } = deck;
 
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  // Purely cosmetic: filtering a local array is instant, but flashing the
-  // loading state keeps the seam where a real fetch would go.
-  useEffect(() => {
-    setLoading(true);
-    const t = setTimeout(() => setLoading(false), 180);
-    return () => clearTimeout(t);
-  }, [filters.genreId, filters.startYear, filters.endYear]);
 
   return (
     <div className="screen">
       <header className="topbar">
         <div>
-          <h1 className="brand">Movie Tourney</h1>
+          <h1 className="brand">ReelMatch</h1>
           <p className="brand-sub">{userInfo.username}</p>
         </div>
         <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -48,6 +40,8 @@ export default function App({ userInfo, deck, onSignOut }) {
           </button>
         </div>
       </header>
+
+      {error && <p className="error" role="alert" style={{ maxWidth: 420 }}>{error}</p>}
 
       <div className="deck">
         {upNext && !loading && (
@@ -70,16 +64,13 @@ export default function App({ userInfo, deck, onSignOut }) {
         ) : (
           <div className="card card-empty">
             <p className="empty-head">
-              {swipedCount > 0 ? 'That\u2019s the whole deck' : 'Nothing matches'}
+              {swipedCount > 0 ? 'You’ve seen them all' : 'No movies match'}
             </p>
             <p className="empty-body">
               {swipedCount > 0
-                ? 'Reset to run through it again, or widen the filters.'
+                ? 'That’s every film in the catalog. Add more, or loosen the filters.'
                 : 'Loosen the genre or year filters to bring cards back.'}
             </p>
-            <button className="btn btn-primary" onClick={reset}>
-              Start over
-            </button>
           </div>
         )}
       </div>
