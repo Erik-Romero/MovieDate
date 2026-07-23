@@ -1,6 +1,4 @@
 import React from 'react';
-
-
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
 function hueFor(str) {
