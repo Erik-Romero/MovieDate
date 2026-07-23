@@ -1,16 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
-import { MOVIES, MOCK_MEMBERS } from './movies';
+import { MOVIES, MOCK_MEMBERS } from '../data/movies';
 
-/**
- * All the state that used to live in Supabase.
- *
- * swipes  { [movieId]: 'like' | 'dislike' }
- * history [movieId, ...] in swipe order, so undo has something to pop
- *
- * The deck is derived, not stored: filter out anything already swiped, apply
- * the active filters, sort by popularity. That means `deck[0]` is always the
- * current card and there's no index to keep in sync.
- */
+
 export function useSwipeDeck() {
   const [swipes, setSwipes] = useState({});
   const [history, setHistory] = useState([]);

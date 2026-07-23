@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import Poster from './Poster';
-import { genreNames } from './movies';
+import { genreNames } from '../data/movies';
 
 const THRESHOLD = 90; // px of horizontal travel before a swipe counts
 

@@ -1,11 +1,8 @@
 import React from 'react';
 import Poster from './Poster';
-import { genreNames } from './movies';
+import { genreNames } from './data/movies';
 
-/**
- * Replaces LikedCards.jsx from the original, which imported useSwipeable but
- * never used it and was never rendered anywhere.
- */
+
 export default function MovieRow({ movie, matchedWith = [] }) {
   return (
     <li className="row">

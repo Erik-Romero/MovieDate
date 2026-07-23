@@ -1,25 +1,47 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import App from './App.jsx';
 import Login from './Login.jsx';
 import Liked from './Liked.jsx';
-import { useSwipeDeck } from './useSwipeDeck.js';
+import { useAuth } from './lib/neon.js';
+import { useSwipeDeck } from './hooks/useSwipeDeck.js';
 import './index.css';
 
 function Main() {
-  const [userInfo, setUserInfo] = useState(null);
-
-  // Lifted here so /liked can read the same swipes /  writes. This is the
-  // job Supabase was doing before.
+  const { user, isPending, signOut } = useAuth();
   const deck = useSwipeDeck();
 
-  if (!userInfo) return <Login onJoin={setUserInfo} />;
+  // isPending is true on first paint while the SDK checks for an existing
+  // session. Rendering <Login /> during it makes the form flash for anyone
+  // already signed in.
+  if (isPending) {
+    return (
+      <div className="screen screen-center">
+        <div className="card card-loading">
+          <span className="pulse-dot" />
+          <span className="pulse-dot" />
+          <span className="pulse-dot" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return <Login />;
+
+  const userInfo = {
+    id: user.id,
+    username: user.name || user.email,
+    email: user.email,
+  };
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App userInfo={userInfo} deck={deck} />} />
+        <Route
+          path="/"
+          element={<App userInfo={userInfo} deck={deck} onSignOut={signOut} />}
+        />
         <Route path="/liked" element={<Liked deck={deck} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

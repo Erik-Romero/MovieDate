@@ -1,5 +1,14 @@
 import React from 'react';
 
+/**
+ * Resolves artwork in three steps:
+ *   1. movie.poster      — use as-is (full URL, or a local path like /posters/x.jpg)
+ *   2. movie.poster_path — TMDB-style path, gets the CDN prefix
+ *   3. neither           — generated gradient with the title set large
+ *
+ * Step 3 is the default in this POC, so it should look deliberate rather than
+ * like a broken image.
+ */
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 

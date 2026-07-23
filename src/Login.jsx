@@ -1,67 +1,170 @@
 import React, { useState } from 'react';
+import { neon } from './lib/neon';
 
-/**
- * Was: create-or-find user, create-or-find group, create membership, all in
- * Supabase (LoginHandler.js). Now it just captures two strings and hands them
- * up. Keeps the entry flow in place for when you wire a real backend back in.
- */
-export default function Login({ onJoin }) {
-  const [group, setGroup] = useState('');
-  const [username, setUsername] = useState('');
+export default function Login() {
+  const [mode, setMode] = useState('signin'); // 'signin' | 'signup'
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const submit = (e) => {
+  const isSignup = mode === 'signup';
+
+  const switchMode = (next) => {
+    setMode(next);
+    setError('');
+  };
+
+  const validate = () => {
+    if (!email.trim() || !password) return 'Email and password are both required.';
+    if (isSignup && !name.trim()) return 'Pick a display name.';
+    if (isSignup && password.length < 8) return 'Password needs at least 8 characters.';
+    return null;
+  };
+
+  const submit = async (e) => {
     e.preventDefault();
-    if (!group.trim() || !username.trim()) {
-      setError('Both fields are needed to continue.');
+    const problem = validate();
+    if (problem) {
+      setError(problem);
       return;
     }
-    onJoin({ username: username.trim(), group: group.trim() });
+
+    setBusy(true);
+    setError('');
+    try {
+      // Better Auth can either return { error } or throw depending on the
+      // failure. Handle both rather than betting on one.
+      const res = isSignup
+        ? await neon.auth.signUp.email({
+            email: email.trim(),
+            password,
+            name: name.trim(),
+          })
+        : await neon.auth.signIn.email({
+            email: email.trim(),
+            password,
+          });
+
+      if (res?.error) {
+        throw new Error(res.error.message || 'Authentication failed.');
+      }
+      // No redirect needed — useSession() in main.jsx picks up the new
+      // session and swaps this screen out.
+    } catch (err) {
+      setError(err?.message || 'Something went wrong. Try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const social = async (provider) => {
+    setError('');
+    try {
+      await neon.auth.signIn.social({ provider, callbackURL: '/' });
+    } catch (err) {
+      setError(err?.message || `Could not sign in with ${provider}.`);
+    }
   };
 
   return (
     <div className="screen screen-center">
       <div className="login">
-        <h1 className="brand brand-lg">ReelMatch</h1>
+        <h1 className="brand brand-lg">Movie Tourney</h1>
         <p className="brand-sub">Swipe with your group, meet in the middle.</p>
 
+        <div className="mode-toggle" role="tablist">
+          <button
+            role="tab"
+            aria-selected={!isSignup}
+            className={`tab ${!isSignup ? 'tab-on' : ''}`}
+            onClick={() => switchMode('signin')}
+          >
+            Sign in
+          </button>
+          <button
+            role="tab"
+            aria-selected={isSignup}
+            className={`tab ${isSignup ? 'tab-on' : ''}`}
+            onClick={() => switchMode('signup')}
+          >
+            Create account
+          </button>
+        </div>
+
         <form onSubmit={submit} className="login-form">
-          <label className="label" htmlFor="group">
-            Group name
+          {isSignup && (
+            <>
+              <label className="label" htmlFor="name">
+                Display name
+              </label>
+              <input
+                id="name"
+                className="field field-block"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="erik"
+                autoComplete="nickname"
+                disabled={busy}
+              />
+            </>
+          )}
+
+          <label className="label" htmlFor="email">
+            Email
           </label>
           <input
-            id="group"
+            id="email"
+            type="email"
             className="field field-block"
-            value={group}
-            onChange={(e) => {
-              setGroup(e.target.value);
-              setError('');
-            }}
-            placeholder="friday-night"
-            autoComplete="off"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            autoComplete="email"
+            inputMode="email"
+            disabled={busy}
           />
 
-          <label className="label" htmlFor="username">
-            Your name
+          <label className="label" htmlFor="password">
+            Password
           </label>
           <input
-            id="username"
+            id="password"
+            type="password"
             className="field field-block"
-            value={username}
-            onChange={(e) => {
-              setUsername(e.target.value);
-              setError('');
-            }}
-            placeholder="erik"
-            autoComplete="off"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={isSignup ? 'at least 8 characters' : ''}
+            autoComplete={isSignup ? 'new-password' : 'current-password'}
+            disabled={busy}
           />
 
-          {error && <p className="error">{error}</p>}
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
 
-          <button type="submit" className="btn btn-primary btn-block">
-            Start swiping
+          <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
+            {busy ? 'Working\u2026' : isSignup ? 'Create account' : 'Sign in'}
           </button>
         </form>
+
+        {/* Requires enabling the provider in Neon Console -> Auth -> Configuration.
+            Delete this block if you're staying email-only. */}
+        <div className="divider">
+          <span>or</span>
+        </div>
+
+        <div className="social-row">
+          <button className="btn btn-ghost btn-block" onClick={() => social('google')} disabled={busy}>
+            Continue with Google
+          </button>
+          <button className="btn btn-ghost btn-block" onClick={() => social('github')} disabled={busy}>
+            Continue with GitHub
+          </button>
+        </div>
       </div>
     </div>
   );

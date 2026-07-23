@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MovieCard from './MovieCard';
-import LoadingCard from './LoadingCard';
-import Poster from './Poster';
-import { GENRE_OPTIONS, YEAR_RANGE } from './movies';
+import MovieCard from './components/MovieCard';
+import LoadingCard from './components/LoadingCard';
+import Poster from './components/Poster';
+import { GENRE_OPTIONS, YEAR_RANGE } from './data/movies';
 
-export default function App({ userInfo, deck }) {
+export default function App({ userInfo, deck, onSignOut }) {
   const {
     current,
     upNext,
@@ -36,14 +36,17 @@ export default function App({ userInfo, deck }) {
     <div className="screen">
       <header className="topbar">
         <div>
-          <h1 className="brand">ReelMatch</h1>
-          <p className="brand-sub">
-            {userInfo.username} in {userInfo.group}
-          </p>
+          <h1 className="brand">Movie Tourney</h1>
+          <p className="brand-sub">{userInfo.username}</p>
         </div>
-        <button className="btn btn-ghost" onClick={() => navigate('/liked')}>
-          Liked {liked.length > 0 && <span className="pip">{liked.length}</span>}
-        </button>
+        <div style={{ display: 'flex', gap: '0.4rem' }}>
+          <button className="btn btn-ghost" onClick={() => navigate('/liked')}>
+            Liked {liked.length > 0 && <span className="pip">{liked.length}</span>}
+          </button>
+          <button className="btn btn-ghost" onClick={onSignOut}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       <div className="deck">
