@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MovieCard from './components/MovieCard';
 import LoadingCard from './components/LoadingCard';
 import Poster from './components/Poster';
+import { GENRE_OPTIONS, YEAR_RANGE } from './data/movies';
 
 export default function App({ userInfo, deck, onSignOut }) {
   const {
@@ -27,8 +28,7 @@ export default function App({ userInfo, deck, onSignOut }) {
     <div className="screen">
       <header className="topbar">
         <div>
-          <h1 className="brand">Movie Tourney
-          </h1>
+          <h1 className="brand">ReelMatch</h1>
           <p className="brand-sub">{userInfo.username}</p>
         </div>
         <div style={{ display: 'flex', gap: '0.4rem' }}>
