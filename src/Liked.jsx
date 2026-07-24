@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import MovieRow from './MovieRow';
+import MovieRow from './components/MovieRow';
 
 export default function Liked({ deck }) {
   const { liked, loading } = deck;

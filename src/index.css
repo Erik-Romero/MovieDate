@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------------
-   ReelMatch — consolidated styles. Replaces both index.css and App.css.
+   Movie Tourney — consolidated styles. Replaces both index.css and App.css.
    Delete src/App.css after dropping this in; nothing imports it anymore.
 --------------------------------------------------------------------------- */
 
@@ -617,4 +617,326 @@ button {
   margin-top: 0;
   justify-content: center;
   padding: 0.65rem 1rem;
+}
+
+/* --- tournament ----------------------------------------------------------- */
+
+.round-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.round-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.round-count {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.progress-track {
+  width: 100%;
+  max-width: 420px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--surface);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--coral);
+  transition: width 220ms ease;
+}
+
+.versus-prompt {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.versus {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 460px;
+  flex: 1;
+  min-height: 0;
+}
+
+.contender {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0;
+  background: none;
+  border: none;
+  transition: transform 140ms ease, opacity 140ms ease;
+}
+
+.contender:active {
+  transform: scale(0.97);
+}
+
+.contender-picked {
+  transform: scale(1.04);
+}
+
+.contender-art {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  max-height: 58vh;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgb(0 0 0 / 45%);
+  border: 2px solid transparent;
+  transition: border-color 140ms ease;
+}
+
+.contender-picked .contender-art {
+  border-color: var(--coral);
+}
+
+.contender-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.contender-year {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.versus-mark {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* --- champion ------------------------------------------------------------- */
+
+.champion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
+
+.champion-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--coral);
+}
+
+.champion-art {
+  width: 74%;
+  aspect-ratio: 2 / 3;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 18px 44px rgb(0 0 0 / 55%);
+  border: 2px solid var(--coral);
+  margin-bottom: 0.5rem;
+}
+
+.champion-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.champion-actions {
+  width: 100%;
+  margin-top: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.champion-actions .btn-block {
+  margin-top: 0;
+}
+
+/* --- rooms & lobby -------------------------------------------------------- */
+
+.panel {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1rem;
+  flex-shrink: 0;
+}
+
+.section-head {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.6rem;
+}
+
+.room-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.room-actions .btn-block,
+.lobby-actions .btn-block {
+  margin-top: 0;
+  text-align: center;
+  justify-content: center;
+}
+
+.code-input {
+  text-align: center;
+  letter-spacing: 0.3em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.code-display {
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px dashed var(--line);
+  color: var(--coral);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  text-align: center;
+}
+
+.room-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.room-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  text-align: left;
+}
+
+.room-item-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.room-item-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.room-item-meta {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+
+.status-pill {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.status-running {
+  color: #67e8a0;
+  border-color: #67e8a0;
+}
+
+.status-done {
+  color: var(--coral);
+  border-color: var(--coral);
+}
+
+.member-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.member {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ready-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--line);
+  flex-shrink: 0;
+  transition: background 200ms ease;
+}
+
+.ready-on {
+  background: #67e8a0;
+  box-shadow: 0 0 8px #67e8a066;
+}
+
+.member-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+}
+
+.member-you {
+  color: var(--text-dim);
+}
+
+.member-likes {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.lobby-actions {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.status-lobby {
+  color: var(--text-dim);
 }

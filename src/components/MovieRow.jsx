@@ -1,7 +1,6 @@
 import React from 'react';
 import Poster from './Poster';
-import { genreNames } from './data/movies';
-
+import { genreNames } from '../data/movies';
 
 export default function MovieRow({ movie, matchedWith = [] }) {
   return (
