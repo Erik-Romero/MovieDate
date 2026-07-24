@@ -4,6 +4,7 @@ import MovieCard from './components/MovieCard';
 import LoadingCard from './components/LoadingCard';
 import Poster from './components/Poster';
 import { GENRE_OPTIONS, YEAR_RANGE } from './data/movies';
+import { APP_NAME } from './config';
 
 export default function App({ userInfo, deck, onSignOut }) {
   const {
@@ -28,12 +29,23 @@ export default function App({ userInfo, deck, onSignOut }) {
     <div className="screen">
       <header className="topbar">
         <div>
-          <h1 className="brand">ReelMatch</h1>
+          <h1 className="brand">{APP_NAME}</h1>
           <p className="brand-sub">{userInfo.username}</p>
         </div>
         <div style={{ display: 'flex', gap: '0.4rem' }}>
           <button className="btn btn-ghost" onClick={() => navigate('/liked')}>
             Liked {liked.length > 0 && <span className="pip">{liked.length}</span>}
+          </button>
+          <button
+            className="btn btn-ghost"
+            onClick={() => navigate('/tournament')}
+            disabled={liked.length < 4}
+            title={liked.length < 4 ? 'Like at least 4 films first' : 'Start the tournament'}
+          >
+            Tourney
+          </button>
+          <button className="btn btn-ghost" onClick={() => navigate('/rooms')}>
+            Rooms
           </button>
           <button className="btn btn-ghost" onClick={onSignOut}>
             Sign out
