@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRoom } from './hooks/useRoom';
-import Tournament from './Tournament';
+import VoteRound from './VoteRound';
 
 export default function Lobby() {
   const { id } = useParams();
   const navigate = useNavigate();
   const {
-    room, members, you, movies, loading, error, setError,
-    setReady, start, reset, leave, allReady, isHost, status,
+    room, members, you, loading, error, setError,
+    setReady, start, reset, leave, allReady, isHost, status, poolSize,
   } = useRoom(id);
+
+  const [size, setSize] = useState(16);
+  const [secs, setSecs] = useState(60);
+
+  // Largest bracket the room's combined likes can actually fill.
+  const maxSize = poolSize >= 32 ? 32 : poolSize >= 16 ? 16 : poolSize >= 8 ? 8 : 4;
 
   if (loading) {
     return (
@@ -34,18 +40,11 @@ export default function Lobby() {
   }
 
   // --- tournament running ------------------------------------------------
-  if (status === 'running') {
-    if (!movies) {
-      return (
-        <div className="screen screen-center">
-          <p className="empty-body">Seeding the bracket…</p>
-        </div>
-      );
-    }
+  if (status === 'running' || status === 'done') {
     return (
-      <Tournament
-        movies={movies}
-        title={room.name}
+      <VoteRound
+        roomId={id}
+        roomName={room.name}
         onExit={() => navigate('/rooms')}
         onReset={isHost ? reset : null}
       />
@@ -104,6 +103,54 @@ export default function Lobby() {
         </ul>
       </div>
 
+      {isHost && (
+        <div className="panel">
+          <h2 className="section-head">Settings</h2>
+
+          <p className="label" style={{ marginTop: 0 }}>Movies in the bracket</p>
+          <div className="seg">
+            {[4, 8, 16, 32].map((n) => (
+              <button
+                key={n}
+                className={`seg-btn ${size === n ? 'seg-on' : ''}`}
+                onClick={() => setSize(n)}
+                disabled={n > maxSize}
+                title={n > maxSize ? `The room only has ${poolSize} films between you` : ''}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+
+          <p className="label">Time per round</p>
+          <div className="seg">
+            {[
+              [30, '30s'],
+              [60, '1m'],
+              [120, '2m'],
+              [300, '5m'],
+              [0, 'None'],
+            ].map(([v, l]) => (
+              <button
+                key={v}
+                className={`seg-btn ${secs === v ? 'seg-on' : ''}`}
+                onClick={() => setSecs(v)}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+
+          <p className="hint">
+            {poolSize} film{poolSize === 1 ? '' : 's'} in the pool.
+            {size > maxSize && ` Not enough for ${size} — it'll use ${maxSize}.`}
+            {secs === 0
+              ? ' Rounds wait for everyone, with no time limit.'
+              : ' A round ends when everyone votes or the clock runs out.'}
+          </p>
+        </div>
+      )}
+
       <div className="lobby-actions">
         <button
           className={`btn btn-block ${you?.ready ? 'btn-ghost' : 'btn-primary'}`}
@@ -117,7 +164,7 @@ export default function Lobby() {
             className="btn btn-primary btn-block"
             onClick={async () => {
               setError('');
-              await start();
+              await start(size, secs);
             }}
             disabled={!allReady}
             title={allReady ? 'Start' : 'Everyone has to be ready first'}

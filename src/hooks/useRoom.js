@@ -79,7 +79,12 @@ export function useRoom(roomId) {
   );
 
   const start = useCallback(
-    () => call('start_tournament', { rid: Number(roomId) }),
+    (wantSize = 16, secs = null) =>
+      call('start_tournament', {
+        rid: Number(roomId),
+        want_size: Number(wantSize),
+        secs: secs == null ? null : Number(secs),
+      }),
     [call, roomId]
   );
 
@@ -112,6 +117,7 @@ export function useRoom(roomId) {
     start,
     reset,
     leave,
+    poolSize: room?.pool_size ?? 0,
     allReady: members.length > 0 && members.every((m) => m.ready),
     isHost: !!room?.is_host,
     status: room?.status ?? 'lobby',
