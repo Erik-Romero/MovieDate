@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import Poster from './components/Poster';
+import Versus from './components/Versus';
+import Champion from './components/Champion';
+import Icon from './components/Icon';
 import {
   buildBracket,
   recordPick,
   currentMatchup,
+  currentMatchupIndex,
   currentRound,
   champion,
   progress,
@@ -40,13 +43,16 @@ export default function Tournament({
   if (!bracket) {
     return (
       <div className="screen screen-center">
-        <div className="empty-state">
-          <p className="empty-head">Not enough movies</p>
+        <div className="empty">
+          <span className="empty-icon">
+            <Icon name="trophy" size={24} />
+          </span>
+          <p className="empty-title">Not enough movies</p>
           <p className="empty-body">
             A bracket needs at least {MIN_SIZE} films. This pool has {movies.length}.
           </p>
           {onExit && (
-            <button className="btn btn-primary" onClick={onExit}>
+            <button type="button" className="btn btn-primary" onClick={onExit}>
               Back
             </button>
           )}
@@ -60,97 +66,86 @@ export default function Tournament({
 
   if (winner) {
     return (
-      <div className="screen screen-center">
-        <div className="champion">
-          <p className="champion-kicker">Winner</p>
-          <div className="champion-art">
-            <Poster movie={winner} />
-          </div>
-          <h1 className="champion-title">{winner.title}</h1>
-          <p className="brand-sub">
-            {winner.release_year} &middot; beat {bracket.size - 1} others
-          </p>
-
-          <div className="champion-actions">
-            <button className="btn btn-primary btn-block" onClick={() => setBracket(seed())}>
-              Run it again
-            </button>
-            {onReset && (
-              <button className="btn btn-ghost btn-block" onClick={onReset}>
-                Back to lobby
-              </button>
-            )}
-            {onExit && (
-              <button className="btn btn-ghost btn-block" onClick={onExit}>
-                Done
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+      <Champion
+        movie={winner}
+        subtitle={`${winner.release_year} · beat ${bracket.size - 1} others`}
+      >
+        <button
+          type="button"
+          className="btn btn-primary btn-lg btn-block"
+          onClick={() => setBracket(seed())}
+        >
+          <Icon name="rotate-ccw" size={18} />
+          Run it again
+        </button>
+        {onReset && (
+          <button type="button" className="btn btn-secondary btn-lg btn-block" onClick={onReset}>
+            Back to lobby
+          </button>
+        )}
+        {onExit && (
+          <button type="button" className="btn btn-ghost btn-block" onClick={onExit}>
+            Done
+          </button>
+        )}
+      </Champion>
     );
   }
 
   const match = currentMatchup(bracket);
   const round = currentRound(bracket);
+  const matchNo = currentMatchupIndex(bracket) + 1;
 
   const pick = (movie) => {
     setFlash(movie.id);
+    // long enough to see the check land, short enough not to feel like a wait
     setTimeout(() => {
       setBracket((b) => recordPick(b, movie.id));
       setFlash(null);
-    }, 180);
+    }, 260);
   };
 
   return (
-    <div className="screen">
-      <header className="topbar">
+    <div className="screen screen-fixed screen-wide">
+      <header className="match-head">
         {onExit ? (
-          <button className="btn btn-ghost" onClick={onExit}>
-            &larr; Exit
+          <button type="button" className="back-btn" onClick={onExit}>
+            <Icon name="x" size={20} />
+            Exit
           </button>
         ) : (
           <span />
         )}
-        <div className="round-label">
-          <span className="round-name">{roundName(round.length)}</span>
-          <span className="round-count">
-            {title} &middot; {made + 1} of {total}
+        <div className="match-title">
+          <span className="match-round">{roundName(round.length)}</span>
+          <span className="kicker">
+            {title} · {made + 1}/{total}
           </span>
         </div>
+        <span />
       </header>
 
-      <div className="progress-track" aria-hidden="true">
-        <div className="progress-fill" style={{ width: `${(made / total) * 100}%` }} />
+      <div className="progress" aria-hidden="true">
+        <div className="progress-fill" style={{ transform: `scaleX(${made / total})` }} />
       </div>
 
-      <p className="versus-prompt">Which one wins?</p>
+      <p className="versus-prompt">
+        <strong>Which one wins?</strong>
+        {round.length > 1 && (
+          <span className="muted">
+            {' '}
+            · Match {matchNo} of {round.length}
+          </span>
+        )}
+      </p>
 
-      <div className="versus">
-        <button
-          className={`contender ${flash === match.a.id ? 'contender-picked' : ''}`}
-          onClick={() => pick(match.a)}
-        >
-          <div className="contender-art">
-            <Poster movie={match.a} />
-          </div>
-          <span className="contender-title">{match.a.title}</span>
-          <span className="contender-year">{match.a.release_year}</span>
-        </button>
-
-        <span className="versus-mark">vs</span>
-
-        <button
-          className={`contender ${flash === match.b.id ? 'contender-picked' : ''}`}
-          onClick={() => pick(match.b)}
-        >
-          <div className="contender-art">
-            <Poster movie={match.b} />
-          </div>
-          <span className="contender-title">{match.b.title}</span>
-          <span className="contender-year">{match.b.release_year}</span>
-        </button>
-      </div>
+      <Versus
+        key={`${bracket.rounds.length}-${matchNo}`}
+        a={match.a}
+        b={match.b}
+        picked={flash}
+        onPick={pick}
+      />
     </div>
   );
 }

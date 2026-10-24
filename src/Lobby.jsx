@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRoom } from './hooks/useRoom';
 import VoteRound from './VoteRound';
+import Avatar from './components/Avatar';
+import Icon from './components/Icon';
+import LoadingScreen from './components/LoadingScreen';
 
 export default function Lobby() {
   const { id } = useParams();
@@ -13,25 +16,29 @@ export default function Lobby() {
 
   const [size, setSize] = useState(16);
   const [secs, setSecs] = useState(60);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 1600);
+    return () => clearTimeout(t);
+  }, [copied]);
 
   // Largest bracket the room's combined likes can actually fill.
   const maxSize = poolSize >= 32 ? 32 : poolSize >= 16 ? 16 : poolSize >= 8 ? 8 : 4;
 
-  if (loading) {
-    return (
-      <div className="screen screen-center">
-        <p className="empty-body">Loading room…</p>
-      </div>
-    );
-  }
+  if (loading) return <LoadingScreen label="Loading room" />;
 
   if (!room) {
     return (
       <div className="screen screen-center">
-        <div className="empty-state">
-          <p className="empty-head">Room not found</p>
+        <div className="empty">
+          <span className="empty-icon">
+            <Icon name="ticket" size={24} />
+          </span>
+          <p className="empty-title">Room not found</p>
           <p className="empty-body">{error || 'It may have been deleted.'}</p>
-          <button className="btn btn-primary" onClick={() => navigate('/rooms')}>
+          <button type="button" className="btn btn-primary" onClick={() => navigate('/rooms')}>
             Back to rooms
           </button>
         </div>
@@ -54,106 +61,159 @@ export default function Lobby() {
   // --- lobby --------------------------------------------------------------
   const readyCount = members.filter((m) => m.ready).length;
 
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard?.writeText(room.code);
+      setCopied(true);
+    } catch {
+      // Clipboard can be blocked (insecure origin, permissions). The code is
+      // on screen either way, so there's nothing to recover.
+    }
+  };
+
   return (
-    <div className="screen screen-scroll">
-      <header className="topbar">
-        <button className="btn btn-ghost" onClick={() => navigate('/rooms')}>
-          ← Rooms
+    <div className="screen">
+      <header className="header">
+        <button type="button" className="back-btn" onClick={() => navigate('/rooms')}>
+          <Icon name="chevron-left" size={22} />
+          Rooms
         </button>
-        <div className="round-label">
-          <span className="round-name">{room.name}</span>
-          <span className="round-count">
-            {readyCount} of {members.length} ready
-          </span>
-        </div>
+        <button
+          type="button"
+          className="btn btn-ghost btn-danger btn-sm"
+          onClick={async () => {
+            await leave();
+            navigate('/rooms');
+          }}
+        >
+          Leave room
+        </button>
       </header>
 
-      <div className="panel">
-        <p className="label" style={{ marginTop: 0 }}>Share this code</p>
+      <div className="page-head page-head-tight">
+        <h1 className="title-xl">{room.name}</h1>
+        <p className="count">
+          {readyCount} of {members.length} ready
+        </p>
+      </div>
+
+      <div className="ticket">
+        <div className="ticket-main">
+          <p className="kicker">Share this code</p>
+          <p className="ticket-code" aria-label={`Room code ${room.code.split('').join(' ')}`}>
+            {room.code}
+          </p>
+        </div>
         <button
-          className="code-display"
-          onClick={() => {
-            navigator.clipboard?.writeText(room.code);
-          }}
-          title="Tap to copy"
+          type="button"
+          className="ticket-stub"
+          onClick={copyCode}
+          data-copied={copied}
+          aria-live="polite"
         >
-          {room.code}
+          <Icon name={copied ? 'check' : 'copy'} size={20} />
+          {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
 
       {error && (
-        <p className="error" role="alert">
+        <p className="alert" role="alert">
           {error}
         </p>
       )}
 
-      <div className="panel">
-        <h2 className="section-head">Players</h2>
+      <section className="panel" aria-labelledby="players-title">
+        <div className="panel-head">
+          <h2 id="players-title" className="kicker">
+            Players
+          </h2>
+          <span className="count">{members.length}</span>
+        </div>
         <ul className="member-list">
           {members.map((m) => (
             <li key={m.user_id} className="member">
-              <span className={`ready-dot ${m.ready ? 'ready-on' : ''}`} />
-              <span className="member-name">
-                {m.name}
-                {m.is_you && <span className="member-you"> (you)</span>}
+              <Avatar name={m.name} small />
+              <span className="member-main">
+                <span className="member-name">
+                  {m.name}
+                  {m.is_you && <span className="member-you"> (you)</span>}
+                </span>
+                <span className="member-likes">{m.likes} liked</span>
               </span>
-              <span className="member-likes">{m.likes} liked</span>
+              <span className={m.ready ? 'pill pill-ready' : 'pill'}>
+                {m.ready ? 'Ready' : 'Not ready'}
+              </span>
             </li>
           ))}
         </ul>
-      </div>
+      </section>
 
       {isHost && (
-        <div className="panel">
-          <h2 className="section-head">Settings</h2>
-
-          <p className="label" style={{ marginTop: 0 }}>Movies in the bracket</p>
-          <div className="seg">
-            {[4, 8, 16, 32].map((n) => (
-              <button
-                key={n}
-                className={`seg-btn ${size === n ? 'seg-on' : ''}`}
-                onClick={() => setSize(n)}
-                disabled={n > maxSize}
-                title={n > maxSize ? `The room only has ${poolSize} films between you` : ''}
-              >
-                {n}
-              </button>
-            ))}
+        <section className="panel" aria-labelledby="settings-title">
+          <div className="panel-head">
+            <h2 id="settings-title" className="kicker">
+              Settings
+            </h2>
+            <span className="count">
+              {poolSize} film{poolSize === 1 ? '' : 's'} in the pool
+            </span>
           </div>
 
-          <p className="label">Time per round</p>
-          <div className="seg">
-            {[
-              [30, '30s'],
-              [60, '1m'],
-              [120, '2m'],
-              [300, '5m'],
-              [0, 'None'],
-            ].map(([v, l]) => (
-              <button
-                key={v}
-                className={`seg-btn ${secs === v ? 'seg-on' : ''}`}
-                onClick={() => setSecs(v)}
-              >
-                {l}
-              </button>
-            ))}
+          <div className="setting">
+            <span className="label">Movies in the bracket</span>
+            <div className="seg" role="group" aria-label="Movies in the bracket">
+              {[4, 8, 16, 32].map((n) => (
+                <button
+                  type="button"
+                  key={n}
+                  className={`seg-btn ${size === n ? 'seg-on' : ''}`}
+                  aria-pressed={size === n}
+                  onClick={() => setSize(n)}
+                  disabled={n > maxSize}
+                  title={n > maxSize ? `The room only has ${poolSize} films between you` : ''}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <p className="hint">
-            {poolSize} film{poolSize === 1 ? '' : 's'} in the pool.
-            {size > maxSize && ` Not enough for ${size} — it'll use ${maxSize}.`}
+          <div className="setting">
+            <span className="label">Time per round</span>
+            <div className="seg" role="group" aria-label="Time per round">
+              {[
+                [30, '30s'],
+                [60, '1m'],
+                [120, '2m'],
+                [300, '5m'],
+                [0, 'None'],
+              ].map(([v, l]) => (
+                <button
+                  type="button"
+                  key={v}
+                  className={`seg-btn ${secs === v ? 'seg-on' : ''}`}
+                  aria-pressed={secs === v}
+                  onClick={() => setSecs(v)}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <p className="hint setting-hint">
+            {size > maxSize && `Not enough for ${size} — it'll use ${maxSize}. `}
             {secs === 0
-              ? ' Rounds wait for everyone, with no time limit.'
-              : ' A round ends when everyone votes or the clock runs out.'}
+              ? 'Rounds wait for everyone, with no time limit.'
+              : 'A round ends when everyone votes or the clock runs out.'}
           </p>
-        </div>
+        </section>
       )}
 
-      <div className="lobby-actions">
+      <div className="dock">
         <button
-          className={`btn btn-block ${you?.ready ? 'btn-ghost' : 'btn-primary'}`}
+          type="button"
+          className={`btn btn-lg btn-block ${you?.ready ? 'btn-secondary' : 'btn-primary'}`}
           onClick={() => setReady(!you?.ready)}
         >
           {you?.ready ? 'Not ready' : "I'm ready"}
@@ -161,7 +221,8 @@ export default function Lobby() {
 
         {isHost && (
           <button
-            className="btn btn-primary btn-block"
+            type="button"
+            className="btn btn-primary btn-lg btn-block"
             onClick={async () => {
               setError('');
               await start(size, secs);
@@ -173,21 +234,7 @@ export default function Lobby() {
           </button>
         )}
 
-        {!isHost && allReady && (
-          <p className="empty-body" style={{ textAlign: 'center' }}>
-            Waiting for the host to start…
-          </p>
-        )}
-
-        <button
-          className="btn btn-ghost btn-block"
-          onClick={async () => {
-            await leave();
-            navigate('/rooms');
-          }}
-        >
-          Leave room
-        </button>
+        {!isHost && allReady && <p className="hint">Waiting for the host to start…</p>}
       </div>
     </div>
   );

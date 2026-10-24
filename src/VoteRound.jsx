@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Poster from './components/Poster';
+import Versus from './components/Versus';
+import Champion from './components/Champion';
+import Icon from './components/Icon';
+import LoadingScreen from './components/LoadingScreen';
 import { useTournament } from './hooks/useTournament';
 
 function clock(s) {
@@ -36,39 +39,25 @@ export default function VoteRound({ roomId, roomName, onExit, onReset }) {
     }
   }, [currentRound, round]);
 
-  if (loading) {
-    return (
-      <div className="screen screen-center">
-        <p className="empty-body">Loading tournament…</p>
-      </div>
-    );
-  }
+  if (loading) return <LoadingScreen label="Loading tournament" />;
 
   // --- champion -----------------------------------------------------------
   if (isDone && champion) {
     return (
-      <div className="screen screen-center">
-        <div className="champion">
-          <p className="champion-kicker">Winner</p>
-          <div className="champion-art">
-            <Poster movie={champion} />
-          </div>
-          <h1 className="champion-title">{champion.title}</h1>
-          <p className="brand-sub">{champion.release_year} &middot; voted by the room</p>
-          <div className="champion-actions">
-            {isHost && onReset && (
-              <button className="btn btn-primary btn-block" onClick={onReset}>
-                Back to lobby
-              </button>
-            )}
-            <button className="btn btn-ghost btn-block" onClick={onExit}>
-              Done
-            </button>
-          </div>
-        </div>
-      </div>
+      <Champion movie={champion} subtitle={`${champion.release_year} · voted by the room`}>
+        {isHost && onReset && (
+          <button type="button" className="btn btn-primary btn-lg btn-block" onClick={onReset}>
+            Back to lobby
+          </button>
+        )}
+        <button type="button" className="btn btn-secondary btn-lg btn-block" onClick={onExit}>
+          Done
+        </button>
+      </Champion>
     );
   }
+
+  const low = hasTimer && remaining <= 10;
 
   // --- you're done, others aren't ------------------------------------------
   if (youAreDone) {
@@ -79,24 +68,30 @@ export default function VoteRound({ roomId, roomName, onExit, onReset }) {
 
     return (
       <div className="screen screen-center">
-        <div className="empty-state">
-          <p className="champion-kicker">{label(roundSize)}</p>
-          <p className="empty-head">Votes are in</p>
+        <div className="waiting">
+          <p className="kicker kicker-gold">{label(roundSize)}</p>
+          <h1 className="empty-title">Votes are in</h1>
           <p className="empty-body">
             Waiting on the rest of the room — {slowest} of {members} have
             finished this round.
           </p>
-          {hasTimer && (
-            <p className={`countdown ${remaining <= 10 ? 'countdown-low' : ''}`}>
+          <div className="tally" aria-hidden="true">
+            {Array.from({ length: members }, (_, i) => (
+              <span key={i} className="tally-pip" data-on={i < slowest} />
+            ))}
+          </div>
+          {hasTimer ? (
+            <p className={`countdown ${low ? 'countdown-low' : ''}`}>
               {remaining > 0 ? clock(remaining) : 'Time!'}
             </p>
+          ) : (
+            <span className="loader" aria-hidden="true">
+              <span className="pulse-dot" />
+              <span className="pulse-dot" />
+              <span className="pulse-dot" />
+            </span>
           )}
-          <div className="waiting-dots">
-            <span className="pulse-dot" />
-            <span className="pulse-dot" />
-            <span className="pulse-dot" />
-          </div>
-          <button className="btn btn-ghost" onClick={onExit}>
+          <button type="button" className="btn btn-ghost waiting-leave" onClick={onExit}>
             Leave it running
           </button>
         </div>
@@ -106,13 +101,7 @@ export default function VoteRound({ roomId, roomName, onExit, onReset }) {
 
   // --- voting -------------------------------------------------------------
   const match = yourRemaining[Math.min(idx, yourRemaining.length - 1)];
-  if (!match) {
-    return (
-      <div className="screen screen-center">
-        <p className="empty-body">Tallying…</p>
-      </div>
-    );
-  }
+  if (!match) return <LoadingScreen label="Tallying" />;
 
   const total = roundSize;
   const done = total - yourRemaining.length;
@@ -125,69 +114,54 @@ export default function VoteRound({ roomId, roomName, onExit, onReset }) {
   };
 
   return (
-    <div className="screen">
-      <header className="topbar">
-        <button className="btn btn-ghost" onClick={onExit}>
-          &larr; Exit
+    <div className="screen screen-fixed screen-wide">
+      <header className="match-head">
+        <button type="button" className="back-btn" onClick={onExit}>
+          <Icon name="x" size={20} />
+          Exit
         </button>
-        <div className="round-label">
-          <span className="round-name">
-            {label(roundSize)}
-            {hasTimer && (
-              <span className={`clock-chip ${remaining <= 10 ? 'countdown-low' : ''}`}>
-                {remaining > 0 ? clock(remaining) : '0s'}
-              </span>
-            )}
+        <div className="match-title">
+          <span className="match-round">{label(roundSize)}</span>
+          <span className="kicker">
+            {roomName} · {done + 1}/{total}
           </span>
-          <span className="round-count">
-            {roomName} &middot; {done + 1} of {total}
-          </span>
+        </div>
+        <div className="match-head-end">
+          {hasTimer && (
+            <span className={`clock-chip ${low ? 'countdown-low' : ''}`} role="timer">
+              <Icon name="clock" size={13} strokeWidth={2.4} />
+              {remaining > 0 ? clock(remaining) : '0s'}
+            </span>
+          )}
         </div>
       </header>
 
-      <div className="progress-track" aria-hidden="true">
-        <div className="progress-fill" style={{ width: `${(done / total) * 100}%` }} />
+      <div className="progress" aria-hidden="true">
+        <div className="progress-fill" style={{ transform: `scaleX(${done / total})` }} />
       </div>
 
       {error && (
-        <p className="error" role="alert">
+        <p className="alert" role="alert">
           {error}
         </p>
       )}
 
       <p className="versus-prompt">
-        Your vote &middot; {match.voted} of {members} voted here
+        <strong>Your vote</strong>
+        <span className="muted">
+          {' '}
+          · {match.voted} of {members} voted here
+        </span>
       </p>
 
-      <div className="versus">
-        <button
-          className={`contender ${flash === match.a.id ? 'contender-picked' : ''}`}
-          onClick={() => choose(match.a)}
-        >
-          <div className="contender-art">
-            <Poster movie={match.a} />
-          </div>
-          <span className="contender-title">{match.a.title}</span>
-          <span className="contender-year">
-            {match.a.release_year} &middot; #{match.seed_a}
-          </span>
-        </button>
-
-        <span className="versus-mark">vs</span>
-
-        <button
-          className={`contender ${flash === match.b.id ? 'contender-picked' : ''}`}
-          onClick={() => choose(match.b)}
-        >
-          <div className="contender-art">
-            <Poster movie={match.b} />
-          </div>
-          <span className="contender-title">{match.b.title}</span>
-          <span className="contender-year">
-            {match.b.release_year} &middot; #{match.seed_b}
-          </span>
-        </button>
-      </div>
+      <Versus
+        key={match.id}
+        a={match.a}
+        b={match.b}
+        seeds={[match.seed_a, match.seed_b]}
+        picked={flash}
+        onPick={choose}
+      />
     </div>
   );
 }

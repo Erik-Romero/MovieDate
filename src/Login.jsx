@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
 import { neon } from './lib/neon';
+import Poster from './components/Poster';
+import Wordmark from './components/Wordmark';
+import Icon from './components/Icon';
+import { MOVIES } from './data/movies';
+
+// Enough one-sheets to cover the tilted wall at any viewport size.
+const WALL = Array.from({ length: 48 }, (_, i) => MOVIES[(i * 7) % MOVIES.length]);
 
 // Better Auth error codes -> something a person can act on. Anything not
 // listed falls back to the server's own message.
@@ -114,107 +121,143 @@ export default function Login() {
   };
 
   return (
-    <div className="screen screen-center">
-      <div className="login">
-        <h1 className="brand brand-lg">Movie Tourney</h1>
-        <p className="brand-sub">Swipe with your group, meet in the middle.</p>
+    <div className="auth">
+      <div className="poster-wall" aria-hidden="true">
+        {WALL.map((movie, i) => (
+          <div key={i} className="poster-wall-tile">
+            <Poster movie={movie} />
+          </div>
+        ))}
+      </div>
 
-        <div className="mode-toggle" role="tablist">
-          <button
-            role="tab"
-            aria-selected={!isSignup}
-            className={`tab ${!isSignup ? 'tab-on' : ''}`}
-            onClick={() => switchMode('signin')}
-          >
-            Sign in
-          </button>
-          <button
-            role="tab"
-            aria-selected={isSignup}
-            className={`tab ${isSignup ? 'tab-on' : ''}`}
-            onClick={() => switchMode('signup')}
-          >
-            Create account
-          </button>
+      <div className="auth-inner">
+        <div className="auth-brand">
+          <Wordmark as="h1" />
+          <p className="lede">Swipe with your group, meet in the middle.</p>
         </div>
 
-        <form onSubmit={submit} className="login-form">
-          {isSignup && (
-            <>
-              <label className="label" htmlFor="name">
-                Display name
+        <div className="auth-card">
+          <div className="seg" role="tablist" aria-label="Account">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!isSignup}
+              className={`seg-btn ${!isSignup ? 'seg-on' : ''}`}
+              onClick={() => switchMode('signin')}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isSignup}
+              className={`seg-btn ${isSignup ? 'seg-on' : ''}`}
+              onClick={() => switchMode('signup')}
+            >
+              Create account
+            </button>
+          </div>
+
+          <form onSubmit={submit} className="form">
+            {isSignup && (
+              <div className="form-field">
+                <label className="label" htmlFor="name">
+                  Display name
+                </label>
+                <input
+                  id="name"
+                  className="field"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="erik"
+                  autoComplete="nickname"
+                  disabled={busy}
+                />
+              </div>
+            )}
+
+            <div className="form-field">
+              <label className="label" htmlFor="email">
+                Email
               </label>
               <input
-                id="name"
-                className="field field-block"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="erik"
-                autoComplete="nickname"
+                id="email"
+                type="email"
+                className="field"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+                inputMode="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 disabled={busy}
               />
-            </>
-          )}
+            </div>
 
-          <label className="label" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            className="field field-block"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            autoComplete="email"
-            inputMode="email"
-            disabled={busy}
-          />
+            <div className="form-field">
+              <label className="label" htmlFor="password">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                className="field"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={isSignup ? 'at least 8 characters' : ''}
+                autoComplete={isSignup ? 'new-password' : 'current-password'}
+                enterKeyHint="go"
+                disabled={busy}
+              />
+            </div>
 
-          <label className="label" htmlFor="password">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            className="field field-block"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={isSignup ? 'at least 8 characters' : ''}
-            autoComplete={isSignup ? 'new-password' : 'current-password'}
-            disabled={busy}
-          />
+            {error && (
+              <p className="alert" role="alert">
+                {error}
+              </p>
+            )}
 
-          {error && (
-            <p className="error" role="alert">
-              {error}
-            </p>
-          )}
+            {notice && (
+              <p className="notice" role="status">
+                {notice}
+              </p>
+            )}
 
-          {notice && (
-            <p className="hint" role="status">
-              {notice}
-            </p>
-          )}
+            <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
+              {busy ? 'Working…' : isSignup ? 'Create account' : 'Sign in'}
+            </button>
+          </form>
 
-          <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
-            {busy ? 'Working\u2026' : isSignup ? 'Create account' : 'Sign in'}
-          </button>
-        </form>
+          {/* Requires enabling the provider in Neon Console -> Auth -> Configuration.
+              Delete this block if you're staying email-only. */}
+          <div className="divider">
+            <span>or</span>
+          </div>
 
-        {/* Requires enabling the provider in Neon Console -> Auth -> Configuration.
-            Delete this block if you're staying email-only. */}
-        <div className="divider">
-          <span>or</span>
-        </div>
-
-        <div className="social-row">
-          <button className="btn btn-ghost btn-block" onClick={() => social('google')} disabled={busy}>
-            Continue with Google
-          </button>
-          <button className="btn btn-ghost btn-block" onClick={() => social('github')} disabled={busy}>
-            Continue with GitHub
-          </button>
+          <div className="social-row">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => social('google')}
+              disabled={busy}
+              aria-label="Continue with Google"
+            >
+              <Icon name="google" size={16} />
+              Google
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => social('github')}
+              disabled={busy}
+              aria-label="Continue with GitHub"
+            >
+              <Icon name="github" size={16} />
+              GitHub
+            </button>
+          </div>
         </div>
       </div>
     </div>
