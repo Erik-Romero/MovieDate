@@ -1,19 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import App from './App.jsx';
 import Login from './Login.jsx';
-import Liked from './Liked.jsx';
-import Rooms from './Rooms.jsx';
-import Lobby from './Lobby.jsx';
-import SoloTournament from './SoloTournament.jsx';
+import SignedIn from './SignedIn.jsx';
 import { useAuth } from './lib/neon.js';
-import { useSwipeDeck } from './hooks/useSwipeDeck.js';
 import './index.css';
 
 function Main() {
   const { user, isPending, signOut } = useAuth();
-  const deck = useSwipeDeck();
 
   // isPending is true on first paint while the SDK checks for an existing
   // session. Rendering <Login /> during it makes the form flash for anyone
@@ -32,27 +25,8 @@ function Main() {
 
   if (!user) return <Login />;
 
-  const userInfo = {
-    id: user.id,
-    username: user.name || user.email,
-    email: user.email,
-  };
-
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={<App userInfo={userInfo} deck={deck} onSignOut={signOut} />}
-        />
-        <Route path="/liked" element={<Liked deck={deck} />} />
-        <Route path="/tournament" element={<SoloTournament deck={deck} />} />
-        <Route path="/rooms" element={<Rooms userInfo={userInfo} />} />
-        <Route path="/room/:id" element={<Lobby />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
-  );
+  // key: a different user means a fresh tree, so no state leaks between accounts.
+  return <SignedIn key={user.id} user={user} onSignOut={signOut} />;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
