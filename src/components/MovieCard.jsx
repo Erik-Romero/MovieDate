@@ -1,4 +1,4 @@
-import React, { useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import Poster from './Poster';
 import Icon from './Icon';
 import { genreNames } from '../data/movies';
@@ -163,6 +163,40 @@ export default function MovieCard({ movie, onSwipe, behindRef, enterFrom = null,
     card.current.getBoundingClientRect(); // commit the start position before transitioning
     paint(els(), 0, 0, 0, `440ms ${EASE_OUT}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Android backstop. touch-action: pan-y keeps horizontal drags for us, but
+  // Chrome re-enables panning inside scrollable boxes (the details block), and
+  // once the browser claims a touch it cancels our pointer stream. Deciding
+  // direction on the first touchmove and cancelling it when it's sideways
+  // keeps the swipe ours. Needs a native non-passive listener: React's touch
+  // handlers are passive and can't preventDefault.
+  useEffect(() => {
+    const el = card.current;
+    let x0 = 0;
+    let y0 = 0;
+    let axis = null;
+    const onStart = (e) => {
+      x0 = e.touches[0].clientX;
+      y0 = e.touches[0].clientY;
+      axis = null;
+    };
+    const onMove = (e) => {
+      if (e.touches.length > 1) return;
+      if (axis === null) {
+        const dx = Math.abs(e.touches[0].clientX - x0);
+        const dy = Math.abs(e.touches[0].clientY - y0);
+        if (dx === dy) return;
+        axis = dx > dy ? 'x' : 'y';
+      }
+      if (axis === 'x' && e.cancelable) e.preventDefault();
+    };
+    el.addEventListener('touchstart', onStart, { passive: true });
+    el.addEventListener('touchmove', onMove, { passive: false });
+    return () => {
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchmove', onMove);
+    };
   }, []);
 
   const onPointerDown = (e) => {

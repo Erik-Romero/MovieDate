@@ -1011,7 +1011,10 @@ a {
   max-height: 78%;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 88px 20px 20px;
+  /* A scroll box gets panning back by default in Chrome, which would let the
+     browser steal sideways drags here. Vertical only, like the card. */
+  touch-action: pan-y;
+  padding: 80px 18px 18px;
   background: linear-gradient(
     to top,
     rgb(9 8 10 / 97%) 0%,
@@ -1028,8 +1031,8 @@ a {
 .card-title {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(26px, 9cqw, 34px);
-  line-height: 1.02;
+  font-size: clamp(22px, 7.5cqw, 30px);
+  line-height: 1.05;
   letter-spacing: -0.01em;
   text-wrap: balance;
 }
@@ -1353,8 +1356,8 @@ a {
   position: relative;
   margin-top: 4.5cqw;
   font-family: var(--font-display);
-  font-size: 15cqw;
-  line-height: 0.95;
+  font-size: 12cqw;
+  line-height: 0.98;
   letter-spacing: -0.01em;
   color: rgb(255 255 255 / 94%);
   text-wrap: balance;
@@ -2374,7 +2377,8 @@ a {
 
   .contender {
     width: 100%;
-    height: min(calc(50cqh - 6px), 280px);
+    /* poster tops out at ~40% of the width so the text keeps room on 360px phones */
+    height: min(calc(50cqh - 6px), calc(60cqw + 20px), 280px);
     flex-direction: row;
     align-items: stretch;
     gap: 16px;
@@ -2413,8 +2417,8 @@ a {
   .contender-title {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: 26px;
-    line-height: 1.02;
+    font-size: 22px;
+    line-height: 1.05;
     letter-spacing: -0.01em;
     -webkit-line-clamp: 3;
   }
@@ -2576,7 +2580,7 @@ a {
 .champion-title {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 40px;
+  font-size: clamp(30px, 9vw, 40px);
   line-height: 1.02;
   letter-spacing: -0.015em;
   text-wrap: balance;
