@@ -6,6 +6,7 @@ import Login from './Login.jsx';
 import Liked from './Liked.jsx';
 import Rooms from './Rooms.jsx';
 import Lobby from './Lobby.jsx';
+import SoloTournament from './SoloTournament.jsx';
 import { useAuth } from './lib/neon.js';
 import { useSwipeDeck } from './hooks/useSwipeDeck.js';
 import './index.css';
@@ -45,6 +46,7 @@ function Main() {
           element={<App userInfo={userInfo} deck={deck} onSignOut={signOut} />}
         />
         <Route path="/liked" element={<Liked deck={deck} />} />
+        <Route path="/tournament" element={<SoloTournament deck={deck} />} />
         <Route path="/rooms" element={<Rooms userInfo={userInfo} />} />
         <Route path="/room/:id" element={<Lobby />} />
         <Route path="*" element={<Navigate to="/" replace />} />
