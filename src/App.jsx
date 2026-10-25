@@ -34,6 +34,8 @@ export default function App({ userInfo, deck, onSignOut }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filtersActive = Boolean(filters.genreId || filters.startYear || filters.endYear);
+  // The first load failed: nothing came back at all, so "no movies match" would be a lie.
+  const loadFailed = Boolean(error) && !current && swipedCount === 0 && liked.length === 0;
 
   const handleSwipe = (movieId, dir) => {
     directions.current.push(dir);
@@ -97,6 +99,20 @@ export default function App({ userInfo, deck, onSignOut }) {
             enterFrom={enterFrom}
             onSwipe={(dir) => handleSwipe(current.id, dir)}
           />
+        ) : loadFailed ? (
+          <div className="card card-empty">
+            <div className="empty">
+              <span className="empty-icon">
+                <Icon name="film" size={24} />
+              </span>
+              <p className="empty-title">Couldn’t load films</p>
+              <p className="empty-body">The database said no — the message above has the details.</p>
+              <button type="button" className="btn btn-secondary" onClick={() => window.location.reload()}>
+                <Icon name="rotate-ccw" size={16} />
+                Try again
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="card card-empty">
             <div className="empty">

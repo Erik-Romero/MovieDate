@@ -1400,8 +1400,38 @@ a {
   text-wrap: pretty;
 }
 
-.cta-card .btn {
+.cta-progress {
   grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cta-progress .progress {
+  flex: 1;
+}
+
+.cta-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.seg-count {
+  margin-left: 2px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+
+.seg-on .seg-count {
+  color: var(--text-2);
+}
+
+.list-hint {
+  padding: 24px 8px;
+  text-align: center;
 }
 
 .rows {
@@ -1445,9 +1475,80 @@ a {
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
 }
 
+.row-rank {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  z-index: 2;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 7px;
+  background: rgb(9 8 10 / 75%);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 22px;
+  text-align: center;
+  color: var(--text);
+}
+
+.row-rank-top {
+  background: var(--gold);
+  color: var(--gold-ink);
+}
+
 .row-body {
   min-width: 0;
   padding-top: 2px;
+}
+
+/* Watched: a pill on the meta line, with a hit area grown to finger size. */
+.watch-toggle {
+  position: relative;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-2);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  white-space: nowrap;
+  transition:
+    transform 140ms var(--ease-out),
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.watch-toggle::before {
+  content: '';
+  position: absolute;
+  inset: -9px -4px;
+}
+
+.watch-toggle:active {
+  transform: scale(0.95);
+}
+
+.watch-toggle[aria-pressed='true'] {
+  background: var(--like-soft);
+  border-color: rgb(67 211 154 / 30%);
+  color: var(--like);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .watch-toggle[aria-pressed='false']:hover {
+    color: var(--text);
+    border-color: var(--line-3);
+  }
 }
 
 .row-title {
@@ -2081,6 +2182,13 @@ a {
 .setting .label {
   display: block;
   margin-bottom: 8px;
+}
+
+.rank-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .dock {

@@ -16,6 +16,7 @@ export default function Lobby() {
 
   const [size, setSize] = useState(16);
   const [secs, setSecs] = useState(60);
+  const [watched, setWatched] = useState('prefer'); // films someone has already seen
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -201,11 +202,37 @@ export default function Lobby() {
             </div>
           </div>
 
+          <div className="setting">
+            <span className="label">Films someone has watched</span>
+            <div className="seg" role="group" aria-label="Films someone has watched">
+              {[
+                ['include', 'Include'],
+                ['prefer', 'Unseen first'],
+                ['exclude', 'Leave out'],
+              ].map(([v, l]) => (
+                <button
+                  type="button"
+                  key={v}
+                  className={`seg-btn ${watched === v ? 'seg-on' : ''}`}
+                  aria-pressed={watched === v}
+                  onClick={() => setWatched(v)}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <p className="hint setting-hint">
             {size > maxSize && `Not enough for ${size} — it'll use ${maxSize}. `}
             {secs === 0
-              ? 'Rounds wait for everyone, with no time limit.'
-              : 'A round ends when everyone votes or the clock runs out.'}
+              ? 'Rounds wait for everyone, with no time limit. '
+              : 'A round ends when everyone votes or the clock runs out. '}
+            {watched === 'exclude'
+              ? 'Leaving out watched films can make the bracket smaller.'
+              : watched === 'prefer'
+                ? 'Films nobody has seen get the better seeds.'
+                : ''}
           </p>
         </section>
       )}
@@ -225,7 +252,7 @@ export default function Lobby() {
             className="btn btn-primary btn-lg btn-block"
             onClick={async () => {
               setError('');
-              await start(size, secs);
+              await start(size, secs, watched);
             }}
             disabled={!allReady}
             title={allReady ? 'Start' : 'Everyone has to be ready first'}

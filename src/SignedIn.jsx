@@ -5,6 +5,7 @@ import Liked from './Liked.jsx';
 import Rooms from './Rooms.jsx';
 import Lobby from './Lobby.jsx';
 import SoloTournament from './SoloTournament.jsx';
+import Rank from './Rank.jsx';
 import TabLayout from './components/TabLayout.jsx';
 import { useSwipeDeck } from './hooks/useSwipeDeck.js';
 
@@ -28,7 +29,7 @@ export default function SignedIn({ user, onSignOut }) {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Home screens share the tab bar; brackets and lobbies are full-screen. */}
+        {/* Home screens share the tab bar; ranking, brackets and lobbies are full-screen. */}
         <Route element={<TabLayout likedCount={deck.liked.length} />}>
           <Route
             path="/"
@@ -38,6 +39,7 @@ export default function SignedIn({ user, onSignOut }) {
           <Route path="/rooms" element={<Rooms userInfo={userInfo} />} />
         </Route>
         <Route path="/tournament" element={<SoloTournament deck={deck} />} />
+        <Route path="/rank" element={<Rank deck={deck} />} />
         <Route path="/room/:id" element={<Lobby />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

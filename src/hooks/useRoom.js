@@ -79,11 +79,12 @@ export function useRoom(roomId) {
   );
 
   const start = useCallback(
-    (wantSize = 16, secs = null) =>
+    (wantSize = 16, secs = null, watched = 'prefer') =>
       call('start_tournament', {
         rid: Number(roomId),
         want_size: Number(wantSize),
         secs: secs == null ? null : Number(secs),
+        watched, // 'include' | 'prefer' | 'exclude' films someone has seen
       }),
     [call, roomId]
   );
