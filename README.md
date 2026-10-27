@@ -1,12 +1,30 @@
-# React + Vite
+# MovieDate
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A group movie-night picker. Swipe on films, rank the ones you like with
+quick head-to-head picks, then vote in a single-elimination bracket
+(up to 16 films) to decide what to watch. Play solo or in a shared room.
 
-Currently, two official plugins are available:
+## Stack
+- Vite + React 19, react-router-dom, plain CSS
+- Neon Auth and Neon Data API (Postgres functions hold the game logic)
+- Deployed on Vercel; rooms and tournaments sync by 2s polling
+- Movie list is local (`src/data/movies.js`); posters load from TMDB
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Run it
+1. `npm install`
+2. Copy `.env.example` to `.env` and set `VITE_NEON_AUTH_URL` and
+   `VITE_NEON_DATA_API_URL` (from your Neon project).
+3. `npm run dev`
 
-## Expanding the ESLint configuration
+Other scripts: `npm run build`, `npm run lint`, `npm run preview`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Database
+The game logic lives in Postgres functions in the Neon project. The SQL
+migrations are kept locally and are not committed. After changing a
+function, refresh the Data API schema:
+`npx neonctl@latest data-api refresh-schema --database neondb`
+
+## Layout
+- `src/` pages (`App`, `Liked`, `Rank`, `Rooms`, `Lobby`, `Tournament`, ...)
+- `src/components/` shared UI, `src/hooks/` room and tournament polling
+- `src/lib/` bracket, ranking and Neon client code
