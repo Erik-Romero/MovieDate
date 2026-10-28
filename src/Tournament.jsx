@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Versus from './components/Versus';
 import Champion from './components/Champion';
+import BracketView from './components/BracketView';
 import Icon from './components/Icon';
 import {
   buildBracket,
@@ -11,6 +12,7 @@ import {
   champion,
   progress,
   roundName,
+  bracketRounds,
   MIN_SIZE,
 } from './lib/bracket';
 
@@ -39,6 +41,7 @@ export default function Tournament({
 
   const [bracket, setBracket] = useState(seed);
   const [flash, setFlash] = useState(null);
+  const [showBracket, setShowBracket] = useState(false);
 
   if (!bracket) {
     return (
@@ -64,6 +67,17 @@ export default function Tournament({
   const winner = champion(bracket);
   const { made, total } = progress(bracket);
 
+  if (winner && showBracket) {
+    return (
+      <BracketView
+        rounds={bracketRounds(bracket)}
+        title={title}
+        champion={winner}
+        onBack={() => setShowBracket(false)}
+      />
+    );
+  }
+
   if (winner) {
     return (
       <Champion
@@ -77,6 +91,14 @@ export default function Tournament({
         >
           <Icon name="rotate-ccw" size={18} />
           Run it again
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary btn-lg btn-block"
+          onClick={() => setShowBracket(true)}
+        >
+          <Icon name="list-ordered" size={18} />
+          See the bracket
         </button>
         {onReset && (
           <button type="button" className="btn btn-secondary btn-lg btn-block" onClick={onReset}>

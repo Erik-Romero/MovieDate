@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Versus from './components/Versus';
 import Champion from './components/Champion';
+import BracketView from './components/BracketView';
 import Icon from './components/Icon';
 import LoadingScreen from './components/LoadingScreen';
-import { useTournament } from './hooks/useTournament';
+import { useTournament, useTournamentBracket } from './hooks/useTournament';
 
 function clock(s) {
   if (s == null) return null;
@@ -29,6 +30,8 @@ export default function VoteRound({ roomId, roomName, onExit, onReset }) {
   const [idx, setIdx] = useState(0);
   const [flash, setFlash] = useState(null);
   const [round, setRound] = useState(null);
+  const [showBracket, setShowBracket] = useState(false);
+  const bracket = useTournamentBracket(roomId, isDone && showBracket);
 
   // New round arrived -> jump back to its first matchup.
   const currentRound = matchups[0]?.round ?? null;
@@ -42,6 +45,19 @@ export default function VoteRound({ roomId, roomName, onExit, onReset }) {
   if (loading) return <LoadingScreen label="Loading tournament" />;
 
   // --- champion -----------------------------------------------------------
+  if (isDone && champion && showBracket) {
+    return (
+      <BracketView
+        rounds={bracket.rounds ?? []}
+        title={roomName}
+        champion={champion}
+        loading={bracket.loading || (!bracket.rounds && !bracket.error)}
+        error={bracket.error}
+        onBack={() => setShowBracket(false)}
+      />
+    );
+  }
+
   if (isDone && champion) {
     return (
       <Champion movie={champion} subtitle={`${champion.release_year} · voted by the room`}>
@@ -50,6 +66,14 @@ export default function VoteRound({ roomId, roomName, onExit, onReset }) {
             Back to lobby
           </button>
         )}
+        <button
+          type="button"
+          className="btn btn-secondary btn-lg btn-block"
+          onClick={() => setShowBracket(true)}
+        >
+          <Icon name="list-ordered" size={18} />
+          See the bracket &amp; votes
+        </button>
         <button type="button" className="btn btn-secondary btn-lg btn-block" onClick={onExit}>
           Done
         </button>
