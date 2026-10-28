@@ -140,11 +140,11 @@ function shapeRounds(matchups) {
     if (!byRound.has(m.round)) byRound.set(m.round, []);
     byRound.get(m.round).push(m);
   }
-  return [...byRound.keys()]
-    .sort((x, y) => x - y)
-    .map((r) =>
-      byRound
-        .get(r)
+  // Widest round first: that's the opening round whichever way `round` counts.
+  return [...byRound.values()]
+    .sort((x, y) => y.length - x.length)
+    .map((round) =>
+      round
         .sort((x, y) => (x.slot ?? x.id) - (y.slot ?? y.id))
         .map((m) => ({
           key: String(m.id),
