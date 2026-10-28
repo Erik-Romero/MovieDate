@@ -100,3 +100,65 @@ export function useTournament(roomId) {
     bracketSize: state?.bracket_size ?? null,
   };
 }
+
+/**
+ * The finished bracket with every vote, fetched once when `enabled` turns on.
+ *
+ * tournament_state() only carries the round in play; tournament_bracket()
+ * returns every matchup the room played plus who voted for which film.
+ * Shaped into rounds for BracketView: opening round first.
+ */
+export function useTournamentBracket(roomId, enabled) {
+  const [rounds, setRounds] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!roomId || !enabled) return;
+    let live = true;
+    setLoading(true);
+    setError('');
+    neon
+      .rpc('tournament_bracket', { rid: Number(roomId) })
+      .then(({ data, error: e }) => {
+        if (!live) return;
+        if (e) setError(e.message ?? 'Could not load the bracket.');
+        else setRounds(shapeRounds(data?.matchups ?? []));
+        setLoading(false);
+      });
+    return () => {
+      live = false;
+    };
+  }, [roomId, enabled]);
+
+  return { rounds, loading, error };
+}
+
+function shapeRounds(matchups) {
+  const byRound = new Map();
+  for (const m of matchups) {
+    if (!byRound.has(m.round)) byRound.set(m.round, []);
+    byRound.get(m.round).push(m);
+  }
+  return [...byRound.keys()]
+    .sort((x, y) => x - y)
+    .map((r) =>
+      byRound
+        .get(r)
+        .sort((x, y) => (x.slot ?? x.id) - (y.slot ?? y.id))
+        .map((m) => ({
+          key: String(m.id),
+          a: m.a,
+          b: m.b,
+          seedA: m.seed_a ?? null,
+          seedB: m.seed_b ?? null,
+          winnerId: m.winner_id,
+          votes: (m.votes ?? []).map((v) => ({
+            key: v.user_id,
+            name: v.name ?? '?',
+            movieId: v.movie_id,
+            isYou: !!v.is_you,
+          })),
+        }))
+    );
+}

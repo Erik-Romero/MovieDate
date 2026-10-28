@@ -75,7 +75,10 @@ export function buildBracket(movies) {
     });
   }
 
-  return { size, rounds: [matchups] };
+  // Seed numbers by movie id, so the finished bracket can label every film.
+  const seeds = Object.fromEntries(seeded.map((m, i) => [m.id, i + 1]));
+
+  return { size, rounds: [matchups], seeds };
 }
 
 /** The round currently being played (the last one in the list). */
@@ -159,4 +162,23 @@ export function eliminated(bracket) {
     }
   }
   return out.reverse();
+}
+
+/**
+ * Every round in the shape BracketView draws: opening round first, each
+ * matchup with its seeds and winner. Solo picks carry no votes.
+ */
+export function bracketRounds(bracket) {
+  const seeds = bracket.seeds ?? {};
+  return bracket.rounds.map((round, r) =>
+    round.map((m, i) => ({
+      key: `${r}-${i}`,
+      a: m.a,
+      b: m.b,
+      seedA: seeds[m.a.id] ?? null,
+      seedB: seeds[m.b.id] ?? null,
+      winnerId: m.winnerId,
+      votes: null,
+    }))
+  );
 }
