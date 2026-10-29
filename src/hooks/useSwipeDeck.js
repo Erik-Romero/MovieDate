@@ -84,6 +84,8 @@ export function useSwipeDeck() {
     const genre = genreId ? Number(genreId) : null;
 
     return movies
+      // hidden is set from the admin console; undefined (column not added yet) counts as visible
+      .filter((m) => !m.hidden)
       .filter((m) => !(m.id in swipes))
       .filter((m) => (genre ? (m.genres ?? []).includes(genre) : true))
       .filter((m) => (from ? m.release_year >= from : true))
